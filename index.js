@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -30,9 +30,23 @@ async function run() {
     await client.connect();
 
     const brandNameCollection = client.db('brandNameDB').collection('brandName');
+    const productCollection = client.db('ProductsDB').collection('product')
 
     app.get('/brand', async(req,res)=>{
         const query = brandNameCollection.find();
+        const result = await query.toArray();
+        res.send(result);
+    })
+
+    app.get('/brand/:id', async(req,res)=>{
+        const id = req.params.id;
+        const query = {_id: new ObjectId(id)};
+        const result = await brandNameCollection.findOne(query);
+        res.send(result);
+    })
+    
+    app.get('/products', async(req,res)=>{
+        const query = productCollection.find();
         const result = await query.toArray();
         res.send(result);
     })
@@ -41,6 +55,14 @@ async function run() {
         const brandInfo = req.body;
         // console.log(brandName);
         const result = await brandNameCollection.insertOne(brandInfo)
+        res.send(result);
+    })
+
+
+    app.post('/products', async(req,res) => {
+        const brandLoad = req.body;
+        const result = await productCollection.insertOne(brandLoad);
+
         res.send(result);
     })
 
